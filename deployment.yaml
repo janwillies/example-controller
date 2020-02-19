@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: controller-example
+  name: controller-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller-example
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: controller-example
+    spec:
+      serviceAccount: controller-example
+      containers:
+      - image: github.com/janwillies/controller-example
+        name: controller-example
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: controller-example
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deployments-reader
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-deployments
+subjects:
+- kind: ServiceAccount
+  name: controller-example
+  namespace: default
+roleRef:
+  kind: Role
+  name: deployments-reader
+  apiGroup: rbac.authorization.k8s.io
